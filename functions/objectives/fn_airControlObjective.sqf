@@ -38,8 +38,8 @@ _markerArea setMarkerAlpha 0.5;
 ] call PIG_fnc_createTask;
 
 [
-	independent, 
-	"ac_task_guer", 
+	west, 
+	"ac_task_west", 
 	"airControlTask", 
 	_airControlPos, 
 	"plane"
@@ -65,17 +65,17 @@ _trg setTriggerStatements [
 			switch (missionNamespace getVariable "PIG_airControlOwner") do {
 				case east : {
 					["ac_task_east", "SUCCEEDED"] call BIS_fnc_taskSetState;
-					["ac_task_guer", "FAILED"] call BIS_fnc_taskSetState;
-					[independent, -10] call BIS_fnc_respawnTickets; 
+					["ac_task_west", "FAILED"] call BIS_fnc_taskSetState;
+					[west, -10] call BIS_fnc_respawnTickets; 
 				};
-				case independent : {
+				case west : {
 					["ac_task_east", "FAILED"] call BIS_fnc_taskSetState;
-					["ac_task_guer", "SUCCEEDED"] call BIS_fnc_taskSetState;
+					["ac_task_west", "SUCCEEDED"] call BIS_fnc_taskSetState;
 					[east, -10] call BIS_fnc_respawnTickets;
 				};
 				case sideUnknown : {
 					["ac_task_east", "CANCELLED"] call BIS_fnc_taskSetState;
-					["ac_task_guer", "CANCELLED"] call BIS_fnc_taskSetState;
+					["ac_task_west", "CANCELLED"] call BIS_fnc_taskSetState;
 				};
 			};
 			deleteMarker "air_control_area";
@@ -87,17 +87,17 @@ _trg setTriggerStatements [
 			[] call PIG_fnc_selectTask;
 			deleteVehicle thisTrigger;
 		} else {
-			_guer = thisList select {((vehicle _x) isKindOf 'Air') && {side _x == independent}};
+			_west = thisList select {((vehicle _x) isKindOf 'Air') && {side _x == west}};
 			_opfor = thisList select {((vehicle _x) isKindOf 'Air') && {side _x == east}};
-			if ((count (_guer)) == (count (_opfor))) then {
+			if ((count (_west)) == (count (_opfor))) then {
 				"air_control_area" setMarkerColor 'colorCIV';
 				missionNamespace setVariable ["PIG_airControlOwner", sideUnknown];
 			};
-			if ((count (_guer)) > (count (_opfor))) then {
+			if ((count (_west)) > (count (_opfor))) then {
 				"air_control_area" setMarkerColor 'ColorGUER';
-				missionNamespace setVariable ["PIG_airControlOwner", independent];
+				missionNamespace setVariable ["PIG_airControlOwner", west];
 			};
-			if ((count (_opfor)) > (count (_guer))) then {
+			if ((count (_opfor)) > (count (_west))) then {
 				"air_control_area" setMarkerColor 'ColorEAST';
 				missionNamespace setVariable ["PIG_airControlOwner", east];
 			};

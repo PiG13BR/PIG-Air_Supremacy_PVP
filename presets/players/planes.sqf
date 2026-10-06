@@ -15,19 +15,11 @@ switch (_side) do {
 			"B_Plane_CAS_01_dynamicLoadout_F", 
 			"B_Plane_Fighter_01_F", 
 			// OPFOR Planes (Vanilla)
-			"O_Plane_CAS_02_dynamicLoadout_F",
 			"O_Plane_Fighter_02_F",
 			"O_Plane_Fighter_02_Stealth_F",
-			// POOK Soviet Pack
-			"pook_MIG21_OPFOR",
-			"pook_Mig23_OPFOR",
-			"pook_MIG29_OPFOR",
-			"pook_MIG31_OPFOR",
-			"pook_MIG35_OPFOR",
-			"pook_Su22_OPFOR",
-			"pook_SU27_OPFOR",
-			"pook_SU30_OPFOR",
-			"pook_YAK38_OPFOR",
+			// AAF Planes
+			"I_Plane_Fighter_04_F",
+			"I_Plane_Fighter_03_dynamicLoadout_F",
 			// FIR
 			"FIR_A10C",
 			"FIR_F14D",
@@ -36,31 +28,20 @@ switch (_side) do {
 			"FIR_F18D",
 			"FIR_AV8B_NA_Blank",
 			"FIR_F22",
-			"FIR_Su25SM3",
-			// RHS
-			"rhs_mig29sm_vvsc", // Improved + FIR
-			"RHS_Su25SM_vvsc",
-			"RHS_T50_vvs_blueonblue"
+			"FIR_Su25SM3"
 		];
 	};
-	case independent : {
+	case west : {
 		_planes = [
 			// NATO Planes (Vanilla)
-			"B_Plane_CAS_01_dynamicLoadout_F", 
 			"B_Plane_Fighter_01_F", 
 			// OPFOR Planes (Vanilla)
 			"O_Plane_CAS_02_dynamicLoadout_F",
 			"O_Plane_Fighter_02_F",
-			// POOK Soviet Pack
-			"pook_MIG21_OPFOR",
-			"pook_Mig23_OPFOR",
-			"pook_MIG29_OPFOR",
-			"pook_MIG31_OPFOR",
-			"pook_MIG35_OPFOR",
-			"pook_Su22_OPFOR",
-			"pook_SU27_OPFOR",
-			"pook_SU30_OPFOR",
-			"pook_YAK38_OPFOR",
+			"O_Plane_Fighter_02_Stealth_F",
+			// AAF Planes
+			"I_Plane_Fighter_04_F",
+			"I_Plane_Fighter_03_dynamicLoadout_F",
 			// FIR
 			"FIR_A10C",
 			"FIR_F14D",
@@ -69,11 +50,7 @@ switch (_side) do {
 			"FIR_F18D",
 			"FIR_AV8B_NA_Blank",
 			"FIR_F22",
-			"FIR_Su25SM3",
-			// RHS
-			"rhs_mig29sm_vvsc", // Improved + FIR
-			"RHS_Su25SM_vvsc",
-			"RHS_T50_vvs_blueonblue"
+			"FIR_Su25SM3"
 		];
 	}
 };

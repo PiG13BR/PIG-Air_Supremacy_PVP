@@ -258,7 +258,7 @@ _endMarker setMarkerType "mil_end";
 _startMarker setMarkerText "Partida";
 _endMarker setMarkerText "Destino";
 switch (_sideDefend) do {
-	case independent : {
+	case west : {
 		_startMarker setMarkerColor "ColorGUER";
 		_endMarker setMarkerColor "ColorGUER";
 	};

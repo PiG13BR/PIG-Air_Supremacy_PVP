@@ -1,15 +1,15 @@
 /*
 	File: fn_spawnJet.sqf
 	Author: PiG13BR - https://github.com/PiG13BR
-	Date: 2024/31/10
-	Last Update: 2024/25/11
+	Date: 31/10/2024
+	Last Update: 05/10/2026
 	License: MIT License - http://www.opensource.org/licenses/MIT
 
 	Description:
 		Spawn selected jet with loadout configuration selected and teleport the player to it
 
 	Parameter(s):
-		_unit - unit player [OBJECT, defaults to objNull]
+		_pilot - unit player [OBJECT, defaults to player]
 		_vehicleClass - plane classname [STRING, defaults to ""]
 	
 	Returns:
@@ -17,26 +17,26 @@
 */
 
 params[
-	["_pilot", objNull, [objNull]],
+	["_pilot", player, [objNull]],
 	["_vehicleClass", "", [""]]
 ];
 
-if (_pilot isEqualTo objNull) exitWith {["No pilots found"] call bis_fnc_error; false};
+if (isNull _pilot) exitWith {["No pilots found"] call bis_fnc_error; false};
 if (_vehicleClass isEqualTo "") exitWith {systemChat "Escolha um avião"; false};
 
-_side = side (group _pilot);
+private _side = side (group _pilot);
 
 // Make a marker name pattern that depends on the spawned unit side
-_markerPattern = format ["respawn_jet_%1", if (_side == independent) then { "guer" } else { toLowerANSI (str _side)}];
+private _markerPattern = format ["respawn_jet_%1", if (_side == west) then { "west" } else { toLowerANSI (str _side)}];
 
 // Get all the map markers and selects only the marker that matches the pattern
-_markers = allMapMarkers select { ((toLowerANSI _x) find _markerPattern) == 0 };
+private _markers = allMapMarkers select { ((toLowerANSI _x) find _markerPattern) == 0 };
 
-if ((count _markers) == 0) exitWith { ["No markers were found"] call bis_fnc_error }; // If no markers were found, exit the scope
+if ((count _markers) == 0) exitWith { ["No markers were found"] call bis_fnc_erro; falser }; // If no markers were found, exit the scope
 
 // For the array that contains the markers, select randomly one of them and get it's position.
-_marker = selectRandom _markers;
-_position = getMarkerPos _marker;
+private _marker = selectRandom _markers;
+private _position = getMarkerPos _marker;
 
 // Position will return numbers in [x,y,z] coords, so the command "set" is selecting the 3 element of the array (z), that is the altitude.
 _position set [2, 1000]; // Set spawn altitude. Change the last number if you want to change the altitude.
@@ -51,46 +51,45 @@ _vehicle setPosASL _position;
 _vehicle setVelocityModelSpace [0,200,0];
 
 // Teleports the player to the jet pilot seat
-_unit moveInDriver _vehicle;
+_pilot moveInDriver _vehicle;
 
-[_vehicle, _unit, _marker] spawn {
-	params ["_vehicle", "_unit", "_marker"];
+[_vehicle, _pilot, _marker] spawn {
+	params ["_vehicle", "_pilot", "_marker"];
 	// Setting up the jet pylons loadout
-	private _pylonsInfo = getAllPylonsInfo _vehicle select { (_x select 3) isNotEqualTo "" };
-	private _pylonsIndices = _pylonsInfo apply { _x select 0 };
-
-	{
-		_vehicle setPylonLoadout [_x, "", true]; // Remove all default pylon magazine
-	}forEach _pylonsIndices;
 
 	private _pylonLoaded = 0;
 
 	// Add the selected pylons loadout
 	{
-		_magazine = PIG_jetLoadout select (_forEachIndex);
+		private _magazine = _x # 0;
+		private _turret = _x # 1;
+		private _index =  _forEachIndex + 1;
 
-		_bool = _vehicle setPylonLoadout [_x, _magazine, true];
+		[_vehicle, _index, _magazine, _turret] call PIG_fnc_setPylonConfiguration;
+
+		private _name = getText(configFile >> "cfgMagazines" >> _magazine >> "displayName");
+
 		if (_magazine isEqualTo "") then {
 			sleep 0.5;
-			systemChat format ["[MUNIÇÃO] Pylon %1 não carregado", _x];
+			systemChat format ["[MUNIÇÃO] Pylon %1 não carregado", _index];
 		} else {
 			sleep 1;
-			systemChat format ["[MUNIÇÃO] Pylon %1 está armado com %2", _x, _magazine];
+			systemChat format ["[MUNIÇÃO] Pylon %1 está armado com %2", _index, _name];
 
 			_pylonLoaded = _pylonLoaded + 1; // Pylon armed, add to calculate fuel consumption coeficient
-		}
-	}forEach _pylonsIndices;
+		};
+	}forEach PIG_PAS_airLoadout;
 
 	// Set fuel consumption
 	if (_pylonLoaded isNotEqualTo 0) then {
 		_vehicle setFuelConsumptionCoef (_pylonLoaded * PIG_fuelConsumption_param);
 	};
 
-	PIG_jetLoadout = nil;
+	PIG_PAS_airLoadout = nil;
 };
 
 // Safe spawn
-[_vehicle, _unit, _marker] spawn PIG_fnc_safeSpawn;
+[_vehicle, _pilot, _marker] spawn PIG_fnc_safeSpawn;
 
 PIG_jet_spawned = true;
 

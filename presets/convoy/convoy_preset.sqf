@@ -36,22 +36,22 @@ switch (_side) do {
 		];
 		_convoy_preset append [_vic1, _vic2, _vic3, _vic4];
 	};
-	case independent : {
+	case west : {
 		_vic1 = [
-			"I_MRAP_03_hmg_F"
+			"B_MRAP_01_hmg_F"
 		];
 		_vic2 = [
-			"I_Truck_02_covered_F"
+			"B_Truck_01_covered_F"
 		];
 		_vic3 = [
-			"I_Truck_02_ammo_F",
-			"I_Truck_02_fuel_F",
-			"I_Truck_02_box_F",
-			"I_Truck_02_medical_F"
+			"B_Truck_01_ammo_F",
+			"B_Truck_01_fuel_F",
+			"B_Truck_01_box_F",
+			"B_Truck_01_medical_F"
 		];
 		_vic4 = [
-			"I_APC_Wheeled_03_cannon_F",
-			"I_MRAP_03_hmg_F"
+			"B_APC_Wheeled_01_cannon_F",
+			"B_MRAP_01_hmg_F"
 		];
 		_convoy_preset append [_vic1, _vic2, _vic3, _vic4];
 	}

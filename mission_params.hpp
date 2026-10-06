@@ -25,9 +25,9 @@ class Params
 	class fuelConsumptionCoef
 	{
 		title = "Coeficiente de gasto de combustível x pylon armado";
-		values[] = { 1, 1.2, 1.5, 2, 2.5 };
-		texts[] = { "1x", "1.2x", "1.5x", "2x", "2.5x" };
-		default = 2;
+		values[] = { 1, 1.1, 1.2, 1.3, 1.4, 1.5 };
+		texts[] = { "1x", "1.1x", "1.2x", "1.3x", "1.4x", "1.5x" };
+		default = 1.2;
 	};
 	class Spacer0 
 	{
@@ -75,10 +75,10 @@ class Params
 	};
 	class ViewDistance
 	{
-		title = "Visão de distância (Inicio)";
-		values[] = { 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000 };
-		texts[] = { "3 km", "4 km", "5 km", "6 km", "7 km", "8 km", "9 km", "10 km" };
-		default = 5000;
+		title = "Visão de distância";
+		values[] = { 4000, 5000, 6000, 7000, 8000, 9000, 10000 };
+		texts[] = { "4 km", "5 km", "6 km", "7 km", "8 km", "9 km", "10 km" };
+		default = 6000;
 		file = "scripts\start_viewDistance.sqf";
 		isGlobal = 1;
 	};

@@ -14,7 +14,7 @@ class Header
 author = "PiG13BR";
 
 // Mission name displayed in the mission selection menu.
-briefingName = $STR_TITLE_MISSION;
+briefingName = $STR_MISSION_TITLE;
 
 // Text to be displayed below the overviewPicture on the mission selection screen
 overviewText = "github.com/PiG13BR";
@@ -25,7 +25,7 @@ overviewPicture = "images\AS.paa";
 
 // String (usually mission name) shown during mission loading.
 // The string is shown in a slightly larger font above the loadScreen.
-onLoadName = $STR_TITLE_MISSION;
+onLoadName = $STR_MISSION_TITLE;
 
 // Displays a message while the mission is loading below the loadScreen picture.
 onLoadMission = "Um cenário de PVP personalizado";
@@ -51,7 +51,7 @@ respawnDelay = 10;
 
 // Templates are pre-defined scripts called when player dies and respawns. They are defined in an array and can be combined together.
 // List of pre-defined variants: https://community.bistudio.com/wiki/Arma_3_Respawn#Official_Templates
-respawnTemplatesindependent[] = { "Tickets" };
+respawnTemplatesWest[] = { "Tickets" };
 respawnTemplatesEast[] = { "Tickets" };
 
 // Show the scoreboard and respawn countdown timer for a player if he is killed with respawn type BASE.
@@ -101,48 +101,16 @@ class CfgFunctions
 {
 	class PIG
 	{
-		class functions {
-			file = "functions";
-
-			class addActionsPlayer {};
-			class autoCleaner {};
-			class checkPlayerHeight {};
-			class cameraAngle {};
-			//class createAA {};
-			class createRRR {};
-			class curatorRegisterObjects {};
-			class fakeArtyFire {};
-			class jetMenu {};
-			class manageWeather {};
-			//class registerAA {};
-			class repairRearmRefuel {};
-			class safeSpawn {};
-			class safeZone {};
-			class setViewDistance {};
-			class spawnJet {};
-			class timeMultiplier {};
-		}
-		class objectives {
-			file = "functions\objectives";
-
-			class airControlObjective {};
-			class artyObjective {};
-			class convoyObjective {};
-			class createTask {};
-			class getAirControlMarkers {};
-			class getArtyMarkers {};
-			class huntObjective {};
-			class manageTimer {};
-			class selectTask {};
-		}
-
+		#include "cfgFunctions.hpp"
+		#include "PAS\cfgFunctions.hpp"
 	};
 };
 
+#include "PAS\ui\RscPASMenu.hpp"
+#include "PAS\cfgEventHandlers.hpp"
+
 // User Interface
 #include "ui\AS_defines.hpp"
-#include "ui\AS_jet_menu.hpp"
-#include "ui\AS_viewDistance_menu.hpp"
 #include "ui\AS_timer_overlay.hpp"
 
 // Mission params

@@ -1,0 +1,38 @@
+/*
+    File: fn_unloadCameraHandle.sqf
+    Author: Alganthe
+    Adaptation made by PiG13BR for Air Spawner Menu
+    Date: 14/10/2025
+    Update Date: 05/10/2026
+    
+    Description:
+        Unloads EH and deletes variables from the camera handle
+
+    Parameter(s):
+        -
+    
+    Returns:
+        -
+*/
+
+removeMissionEventHandler ["Draw3D", PIG_PAS_camPosUpdateHandle];
+
+showHUD [true, true, true, true, true, true, true, true, true, true, true];
+
+if (!isNull curatorCamera && {PIG_PAS_player == player}) then {
+    curatorCamera cameraEffect ["Internal", "BACK"];
+} else {
+    PIG_PAS_camera cameraEffect ["Terminate", "BACK"];
+};
+
+deleteVehicle PIG_PAS_cameraHelper;
+camDestroy PIG_PAS_camera;
+
+PIG_PAS_player switchCamera PIG_PAS_cameraView;
+
+PIG_PAS_camera = nil;
+PIG_PAS_cameraHelper = nil;
+PIG_PAS_mouseButtonState = nil;
+PIG_PAS_center = nil;
+PIG_PAS_cameraPos = nil;
+PIG_PAS_visionMode = nil;

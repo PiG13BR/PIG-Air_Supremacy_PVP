@@ -7,8 +7,8 @@ PIG_routes_convoy = compileFinal preprocessFileLineNumbers "presets\convoy\convo
 PIG_presets_artillery = compileFinal preprocessFileLineNumbers "presets\artillery\artillery_preset.sqf";
 
 // Spawn schedule codes
-0 spawn PIG_fnc_selectTask;
-0 spawn PIG_fnc_autoCleaner;
-0 spawn PIG_fnc_timeMultiplier;
-0 spawn PIG_fnc_manageWeather;
-0 spawn PIG_fnc_curatorRegisterObjects; // Update objects for zeus
+spawn PIG_fnc_selectTask;
+spawn PIG_fnc_autoCleaner;
+spawn PIG_fnc_timeMultiplier;
+spawn PIG_fnc_manageWeather;
+spawn PIG_fnc_curatorRegisterObjects; // Update objects for zeus

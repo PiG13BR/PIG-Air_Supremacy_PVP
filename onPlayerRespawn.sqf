@@ -1,5 +1,5 @@
 // onPlayerRespawn.sqf
-params ["_unit", "_corpse"]; // same as the default "_newUnit" and "_oldUnit".
+params ["_unit", "_corpse"];
 
 waitUntil {!isNil "PIG_serverReady"};
 
@@ -31,19 +31,5 @@ if (!PIG_serverReady || {!PIG_clientReady}) then {
 };
 
 cutText ['', 'BLACK IN'];
-[_unit] call PIG_fnc_jetMenu;
 
-while {dialog && !PIG_jet_spawned} do {
-    sleep 0.5;
-
-    if (!dialog && !PIG_jet_spawned) then {
-        [_unit] call PIG_fnc_jetMenu;
-    };
-
-    if (PIG_jet_spawned) exitWith {
-        //cutText ['', 'BLACK IN']; 
-        [_unit] call PIG_fnc_addActionsPlayer;
-    };
-
-    //0 cutText ["", "BLACK FADED"]; 
-};
+[_unit] call PIG_fnc_createPASRsc;

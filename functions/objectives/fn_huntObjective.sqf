@@ -62,7 +62,7 @@ _player addMPEventHandler ["MPKilled", {
 }];
 
 _sideDefend = (side _player);
-_sideAttack = [east, independent] - [_sideDefend];
+_sideAttack = [east, west] - [_sideDefend];
 missionNamespace setVariable ["PIG_huntDefendSide", _sideDefend];
 
 // Create tasks

@@ -54,8 +54,6 @@ sleep PIG_selectTaskDelay_param + (random PIG_selectTaskDelay_param);
 
 if (count allPlayers < PIG_requiredPlayers_param) exitWith {diag_log "[WARNING] Not enough players to start tasks"; [] call PIG_fnc_selectTask};
 
-
-
 switch (_task) do {
 	case "CONVOY" : {
 		
@@ -65,12 +63,12 @@ switch (_task) do {
 		
 		// Check defender side from last task
 		if (isNil {missionNamespace getVariable "PIG_convoyDefendSide"}) then {
-			_sideDefend = selectRandom [independent, east]; // Selected side will defend the convoy
-			_sideAttack = selectRandom ([independent, east] - [_sideDefend]);
+			_sideDefend = selectRandom [west, east]; // Selected side will defend the convoy
+			_sideAttack = selectRandom ([west, east] - [_sideDefend]);
 		} else {
 			// Change sides for the task
 			_sideAttack = (missionNamespace getVariable "PIG_convoyDefendSide");
-			_sideDefend = selectRandom ([independent, east] - [_sideAttack])
+			_sideDefend = selectRandom ([west, east] - [_sideAttack])
 		};
 		
 		[_sideDefend, _sideAttack] call PIG_fnc_convoyObjective;
@@ -89,12 +87,12 @@ switch (_task) do {
 
 		// Check defender side from last task
 		if (isNil {missionNamespace getVariable "PIG_artyDefendSide"}) then {
-			_sideDefend = selectRandom [independent, east]; // Selected side will defend the artillery
-			_sideAttack = selectRandom ([independent, east] - [_sideDefend]);
+			_sideDefend = selectRandom [west, east]; // Selected side will defend the artillery
+			_sideAttack = selectRandom ([west, east] - [_sideDefend]);
 		} else {
 			// Change sides for the task
 			_sideAttack = (missionNamespace getVariable "PIG_artyDefendSide");
-			_sideDefend = selectRandom ([independent, east] - [_sideAttack])
+			_sideDefend = selectRandom ([west, east] - [_sideAttack])
 		};
 
 		[_sideDefend, _sideAttack] call PIG_fnc_artyObjective;
