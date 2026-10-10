@@ -14,3 +14,4 @@ if (isServer) then {
 	publicVariable "PIG_serverReady";
 };
 
+PIG_PAS_camInverted = 0;

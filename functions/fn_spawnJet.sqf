@@ -2,7 +2,7 @@
 	File: fn_spawnJet.sqf
 	Author: PiG13BR - https://github.com/PiG13BR
 	Date: 31/10/2024
-	Last Update: 05/10/2026
+	Last Update: 07/10/2026
 	License: MIT License - http://www.opensource.org/licenses/MIT
 
 	Description:
@@ -65,7 +65,7 @@ _pilot moveInDriver _vehicle;
 		private _turret = _x # 1;
 		private _index =  _forEachIndex + 1;
 
-		[_vehicle, _index, _magazine, _turret] call PIG_fnc_setPylonConfiguration;
+		[_vehicle, _index, _magazine, _turret] remoteExecCall ["PIG_fnc_setPylonConfiguration", _vehicle];
 
 		private _name = getText(configFile >> "cfgMagazines" >> _magazine >> "displayName");
 
@@ -85,7 +85,8 @@ _pilot moveInDriver _vehicle;
 		_vehicle setFuelConsumptionCoef (_pylonLoaded * PIG_fuelConsumption_param);
 	};
 
-	PIG_PAS_airLoadout = nil;
+	//PIG_PAS_airLoadout = nil;
+	PIG_jet_ready = true;
 };
 
 // Safe spawn

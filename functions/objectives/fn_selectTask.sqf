@@ -1,8 +1,8 @@
 /*
 	File: fn_selectTask.sqf
 	Author: PiG13BR - https://github.com/PiG13BR
-	Date: 2024/01/11
-	Last Update: 2024/10/11
+	Date: 01/11/2024
+	Last Update: 07/10/2026
 	License: MIT License - http://www.opensource.org/licenses/MIT
 
 	Description:
@@ -46,11 +46,13 @@ if (count _tasks > 0) then {
 	};
 } else {
 	_tasks = PIG_availableMissions_param;
+	_task = selectRandom _tasks;
 };
 
-diag_log format ["[TASK SELECTOR INFO] Next objective will be: %1", _task];
+private _delay = PIG_selectTaskDelay_param + (random PIG_selectTaskDelay_param);
+diag_log format ["[TASK SELECTOR INFO] Next objective will be: %1. Starting in about: %2 minute(s)", _task, round (_delay / 60)];
 
-sleep PIG_selectTaskDelay_param + (random PIG_selectTaskDelay_param);
+sleep _delay;
 
 if (count allPlayers < PIG_requiredPlayers_param) exitWith {diag_log "[WARNING] Not enough players to start tasks"; [] call PIG_fnc_selectTask};
 

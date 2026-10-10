@@ -24,6 +24,9 @@ localNameSpace setVariable ["PIG_PAS_pylonIndex", -1];
 
 private _side = side (group player);
 
+PIG_PAS_pylonsTurret = createHashMap;
+PIG_PAS_cfgPresets = createHashMap;
+
 // Spawn pos jet placeholder
 private _pattern = format["%1_jet_placeholder", tolowerANSI (str _side)];
 private _markers = allMapMarkers select {((toLowerANSI _x) find _pattern) == 0};

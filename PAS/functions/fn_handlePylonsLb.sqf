@@ -3,7 +3,7 @@
 	File: fn_handlePylonsLb.sqf
 	Author: PiG13BR - https://github.com/PiG13BR
 	Date: 14/10/2025
-	Last Update: 28/06/2026
+	Last Update: 07/10/2026
 	License: MIT License - http://www.opensource.org/licenses/MIT
 
 	Description:
@@ -17,7 +17,11 @@
 */
 params ["_control", "_lbCurSel"];
 
-localNameSpace setVariable ["PIG_PAS_pylonIndex", _lbCurSel]; // Save the index selection for the list box
+// Get pylon true index
+private _pylonIndex = _control lbValue _lbCurSel;
+localNameSpace setVariable ["PIG_PAS_pylonIndex", _pylonIndex]; // Save the index selection for the list box
+localNameSpace setVariable ["PIG_PAS_pylonLbIndex", _lbCurSel]; // Save pylon lb selection
+
 // Get pylon name
 private _pylonName = _control lbData _lbCurSel;
 localNameSpace setVariable ["PIG_PAS_pylonName", _pylonName]; 

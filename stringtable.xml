@@ -114,18 +114,6 @@
 				<Original>Gunner</Original>
 				<Portuguese>Artilheiro</Portuguese>
 			</Key>
-			<Key ID="STR_TITLE_SETTING_INVERT_CAMERA">
-				<Original>Invert camera controls</Original>
-				<Portuguese>Inverter controles da camera</Portuguese>
-			</Key>
-			<Key ID="STR_PAS_SETTING_NEARBYOBJECTS_DESCRIPTION">
-				<Original>Required nearby object</Original>
-				<Portuguese>Objeto requerido perto</Portuguese>
-			</Key>
-            <Key ID="STR_PAS_SETTING_NEARBYOBJECTS_TOOLTIP">
-				<Original>The aircraft must be near (50 m) of the provided object in the list</Original>
-				<Portuguese>A aeronave precisa estar perto (50 m) do objeto que está na lista</Portuguese>
-			</Key>
 			<Key ID="STR_PAS_EMPTY">
 				<Original>Empty</Original>
 				<Portuguese>Vazio</Portuguese>

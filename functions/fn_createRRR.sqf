@@ -33,7 +33,7 @@ private _rrrMarkers = allMapMarkers select { ((toLowerANSI _x) find _markerPatte
 			if (!(isNull (objectParent player))) then {
 				if ((!isNil {missionNamespace getVariable "PIG_huntPlayerJet"}) && {(vehicle player) == (missionNamespace getVariable "PIG_huntPlayerJet")}) exitWith {};
 					[vehicle player] call PIG_fnc_repairRearmRefuel;
-					[vehicle player] spawn PIG_fnc_safeZone;
+					[vehicle player, player] spawn PIG_fnc_safeZone;
 			}
 		},
 		toString {

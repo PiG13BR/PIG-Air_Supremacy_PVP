@@ -1,8 +1,8 @@
 /*
 	File: fn_artyObjective.sqf
 	Author: PiG13BR - https://github.com/PiG13BR
-	Date: 2024/07/11
-	Last Update: 2024/09/11
+	Date: 07/11/2024
+	Last Update: 07/10/2026
 	License: MIT License - http://www.opensource.org/licenses/MIT
 
 	Description:
@@ -19,8 +19,7 @@
 params["_sideDefend", "_sideAttack"];
 
 missionNamespace setVariable ["PIG_allArtyDestroyed", false];
-missionNamespace setVariable ["PIG_artyDefendSide", _sideDefend];
-missionNamespace setVariable ["PIG_artyAttackSide", _sideAttack];
+PIG_artyAttackSide = _sideAttack;
 
 // Get spawn markers
 _markers = [_sideDefend] call PIG_fnc_getArtyMarkers; // Array with 3 markers
@@ -35,16 +34,15 @@ if (_patrol isEqualTo []) exitWith {diag_log "[WARNING] No patrol units classes 
 
 // Spawn artillery and patrol group
 private _arty_vehicles = [];
-private _groups = [];
-private _arty_groups = [];
+private _patrolGroups = [];
 {
 	private _pos = getMarkerPos _x;
 
 	// Create artillery
-	_artyVeh = createVehicle [_artyClass, _pos, [], 30, "NONE"];
+	private _artyVeh = createVehicle [_artyClass, _pos, [], 30, "NONE"];
 	_artyVeh setDir (markerDir _x);
 
-	_grpArty = createVehicleCrew _artyVeh;
+	private _grpArty = createVehicleCrew _artyVeh;
 	_grpArty setBehaviour "COMBAT"; // Turn off lights
 
 	_artyVeh deleteVehicleCrew (driver (_artyVeh)); // Making sure that doesn't move
@@ -55,13 +53,19 @@ private _arty_groups = [];
 	private _grpPatrol = [(_pos) getPos [50, (random 360)], _sideDefend, _patrol] call BIS_fnc_spawnGroup;
 	[_grpPatrol, _pos, 100] call BIS_fnc_taskPatrol;
 
-	_arty_groups pushBack _grpArty;
-	_groups pushBack _grpPatrol;
+	if (local _grpPatrol) then
+	{
+		_grpPatrol deleteGroupWhenEmpty true;
+	}
+	else // group is local to a client
+	{
+		[_grpPatrol, true] remoteExec ["deleteGroupWhenEmpty", groupOwner _grpPatrol];
+	};
+
+	_patrolGroups pushBack _grpPatrol;
 }forEach _markers;
 
-missionNamespace setVariable ["PIG_artyGroups", _arty_groups];
-missionNamespace setVariable ["PIG_patrolGroups", _groups];
-missionNamespace setVariable ["PIG_artyVehicles", _arty_vehicles];
+PIG_artyVehicles = _arty_vehicles;
 
 // Add EH to artillery units and some attributes
 {
@@ -70,7 +74,7 @@ missionNamespace setVariable ["PIG_artyVehicles", _arty_vehicles];
 		params ["_unit", "_selection", "_damage", "_source", "_projectile", "_hitIndex", "_instigator", "_hitPoint", "_directHit", "_context"];
 		// avoid TK by making indestructible by friendly fire
 		private ["_getDamage"];
-		if ((side _source) != (missionNamespace getVariable "PIG_artyAttackSide")) then {
+		if ((side _source) != PIG_artyAttackSide) then {
 			0
 		} else {
 			_getDamage = _damage;
@@ -92,7 +96,7 @@ missionNamespace setVariable ["PIG_artyVehicles", _arty_vehicles];
 			params ["_unit", "_selection", "_damage", "_source", "_projectile", "_hitIndex", "_instigator", "_hitPoint", "_directHit", "_context"];
 			// avoid TK by making indestructible by friendly fire
 			private ["_getDamage"];
-			if ((side _source) != (missionNamespace getVariable "PIG_artyAttackSide")) then {
+			if ((side _source) != PIG_artyAttackSide) then {
 				0
 			} else {
 				_getDamage = _damage;
@@ -118,8 +122,7 @@ missionNamespace setVariable ["PIG_artyVehicles", _arty_vehicles];
 			_instigator addScore 10;
 		};
 
-		private _arty_vehicles = (missionNamespace getVariable "PIG_artyVehicles") - [_unit];
-		missionNamespace setVariable ["PIG_artyVehicles", _arty_vehicles];
+		PIG_artyVehicles deleteAt (PIG_artyVehicles find _unit);
 	}];
 
 	_x allowCrewInImmobile true;
@@ -144,8 +147,9 @@ missionNamespace setVariable ["PIG_artyVehicles", _arty_vehicles];
 	"destroy" // Icon
 ] call PIG_fnc_createTask;
 
-// Individual tasks & triggers
-missionNamespace setVariable ["PIG_artyTriggers", []];
+// Create Timer
+missionNamespace setVariable ["PIG_timerTimeOut", false, true];
+[PIG_artyTimer_param] remoteExecCall ["PIG_fnc_manageTimer", 0, true];
 
 {
 	_defFormat = (format ["artyDefTask_%1",( _forEachIndex + 1)]);
@@ -172,88 +176,54 @@ missionNamespace setVariable ["PIG_artyTriggers", []];
 		false
 	] call PIG_fnc_createTask;
 
-	// Individual trigger to monitor individual arty
-	private _trg = createTrigger ["EmptyDetector", _x, false];
-	_trg setTriggerArea [50, 50, 0, false];
-	_trg setTriggerActivation [str _sideDefend, "PRESENT", true];
-	_trg setTriggerInterval 0.5;
-	_trg setTriggerStatements [
-		// Condition
-		toString {
-			count (thisList select {(alive _x) && {_x in (missionNamespace getVariable "PIG_artyVehicles")}}) == 0
-		},
-		// On Activation
-		toString {
-			if ((thisList select {(alive _x) && {_x in (missionNamespace getVariable "PIG_artyVehicles")}}) isEqualTo []) then {
-				if ((count (missionNamespace getVariable 'PIG_artyVehicles') == 0) || {missionNamespace getVariable 'PIG_timerTimeOut'}) exitWith {};
-				[(missionNamespace getVariable 'PIG_artyDefendSide'), -3] call BIS_fnc_respawnTickets; 
-				[(thisTrigger getVariable 'PIG_trgArtyAttackTask'), 'SUCCEEDED', true] call BIS_fnc_taskSetState; 
-				[(thisTrigger getVariable 'PIG_trgArtyDefenseTask'), 'FAILED', true] call BIS_fnc_taskSetState;
-			};
+	// Monitor individual arty
+	[_x, _defFormat, _attFormat, _sideDefend] spawn {
+		params["_arty", "_defTask", "_attTask", "_sideDefend"];
 
-			deleteVehicle thisTrigger;
-		}, 
-		// On Deactivation
-		""
-	];
+		waitUntil [{!alive _arty || {missionNamespace getVariable ['PIG_timerTimeOut', false]}}, -1, 1];
 
-	// Use trigger created as varspace to get tasks related to it
-	_trg setVariable ["PIG_trgArtyDefenseTask", _defFormat, true];
-	_trg setVariable ["PIG_trgArtyAttackTask", _attFormat, true];
-	
-	// These triggers will also be deleted in the main trigger
-	(missionNamespace getVariable "PIG_artyTriggers") pushBack _trg;
+		if (!alive _arty) then {
+			[_sideDefend, -3] call BIS_fnc_respawnTickets;
+			if ((count PIG_artyVehicles == 0) || {missionNamespace getVariable ['PIG_timerTimeOut', false]}) exitWith {};
+			[_attTask, 'SUCCEEDED', true] call BIS_fnc_taskSetState; 
+			[_defTask, 'FAILED', true] call BIS_fnc_taskSetState;
+		};
+	};
 }forEach _arty_vehicles;
 
-// Create Timer
-missionNamespace setVariable ["PIG_timerTimeOut", false, true];
-[PIG_artyTimer_param] remoteExecCall ["PIG_fnc_manageTimer", 0, true];
-
 // Create the main trigger to manage the task
-private _trg = createTrigger ["EmptyDetector", [0,0,0], false];
-_trg setTriggerArea [0, 0, 0, false];
-_trg setTriggerInterval 0.5;
-_trg setTriggerStatements [
-	// Condition
-	toString {
-		(count (missionNamespace getVariable 'PIG_artyVehicles') == 0) || {missionNamespace getVariable 'PIG_timerTimeOut'}
-	},
-	// On Activation
-	toString {
-		_tickets = ((count (missionNamespace getVariable 'PIG_artyVehicles')) * 3);
-		if ((count (missionNamespace getVariable 'PIG_artyVehicles') == 0) && {!(missionNamespace getVariable 'PIG_timerTimeOut')}) then {
-			[-1, true] call BIS_fnc_countdown;
-			['artyAtt_task', 'SUCCEEDED', true] call BIS_fnc_taskSetState; 
-			['artyDef_task', 'FAILED', true] call BIS_fnc_taskSetState; 
-		} else {
-			['artyAtt_task', 'FAILED', true] call BIS_fnc_taskSetState; 
-			['artyDef_task', 'SUCCEEDED', true] call BIS_fnc_taskSetState;
-			[(missionNamespace getVariable 'PIG_artyAttackSide'), - _tickets] call BIS_fnc_respawnTickets;
-		};
-		if ((count (missionNamespace getVariable 'PIG_artyVehicles') > 0) && {missionNamespace getVariable 'PIG_timerTimeOut'}) then {
-			{
-				_x removeAllMPEventHandlers "MPKilled";
-				_x removeAllEventHandlers "GetOut";
-				_x removeAllEventHandlers "HandleDamage";
-				deleteVehicle _x;
-			}forEach (missionNamespace getVariable 'PIG_artyVehicles');
-		};
-		{deleteVehicle _x}forEach (missionNamespace getVariable "PIG_artyTriggers") + [thisTrigger];
-		missionNamespace setVariable ['PIG_artyVehicles', nil];
-		{deleteVehicle (units _x)} forEach (missionNamespace getVariable 'PIG_artyGroups');
-		missionNamespace setVariable ['PIG_artyGroups', nil];
-		{deleteVehicle (units _x)}forEach (missionNamespace getVariable "PIG_patrolGroups");
-		missionNamespace setVariable ['PIG_patrolGroups', nil];
+[_sideAttack, _patrolGroups] spawn {
+	params["_sideAttack", "_patrolGroups"];
+	waitUntil [{(count PIG_artyVehicles == 0) || {missionNamespace getVariable ['PIG_timerTimeOut', false]}}, -1, 1];
 
-		diag_log "[ARTILLERY OBJECTIVE] Artillery objective finished";
-		[] call PIG_fnc_selectTask;
+	private _tickets = (count PIG_artyVehicles * 3);
+	if ((count PIG_artyVehicles == 0) && {!(missionNamespace getVariable ['PIG_timerTimeOut', false])}) then {
+		[-1, true] call BIS_fnc_countdown;
+		['artyAtt_task', 'SUCCEEDED', true] call BIS_fnc_taskSetState; 
+		['artyDef_task', 'FAILED', true] call BIS_fnc_taskSetState; 
+	} else {
+		['artyAtt_task', 'FAILED', true] call BIS_fnc_taskSetState; 
+		['artyDef_task', 'SUCCEEDED', true] call BIS_fnc_taskSetState;
+		[_sideAttack, - _tickets] call BIS_fnc_respawnTickets;
+	};
 
-		missionNamespace setVariable ["PIG_artyTriggers", nil];
-	}, 
-	// On Deactivation
-	""
-];
+	if ((count PIG_artyVehicles > 0) && {missionNamespace getVariable ['PIG_timerTimeOut', false]}) then {
+		{
+			deleteVehicleCrew _x;
+			deleteVehicle _x;
+		}forEach PIG_artyVehicles;
+	};
+
+	{
+		{deleteVehicle _x}forEach (units _x);
+	}forEach _patrolGroups;
+
+	PIG_artyAttackSide = nil;
+	PIG_artyVehicles = nil;
+
+	diag_log "[ARTILLERY OBJECTIVE] Artillery objective finished";
+	[] call PIG_fnc_selectTask;
+};
 
 diag_log "[ARTILLERY OBJECTIVE] Artillery objective started";
 PIG_lastTaskPlayed pushBack "ARTY";
-

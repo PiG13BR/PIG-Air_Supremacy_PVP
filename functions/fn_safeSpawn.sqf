@@ -1,8 +1,8 @@
 /*
 	File: fn_safeSpawn.sqf
 	Author: PiG13BR - https://github.com/PiG13BR
-	Date: 2024/03/11
-	Last Update: 2024/04/11
+	Date: 03/11/2024
+	Last Update: 07/10/2026
 	License: MIT License - http://www.opensource.org/licenses/MIT
 
 	Description:
@@ -19,7 +19,7 @@ params ["_vehicle", "_unit"];
 
 _safeSpawnTimer = 5;
 
-for "_i" from 1 to _safeSpawnTimer do {
+while {!PIG_jet_ready} do {
 	sleep 1;
 	cutText ["Spawn Seguro: ATIVADO", "PLAIN DOWN"];
 };

@@ -22,4 +22,7 @@ private _displayToUse = findDisplay IDD_MISSION;
 
 PIG_PAS_player = _player;
 
-[{_this createDisplay "PIG_PAS_RscMainMenu"}, _displayToUse] call CBA_fnc_execNextFrame;
+_displayToUse spawn {
+	sleep 0.01;
+	_this createDisplay "PIG_PAS_RscMainMenu";
+};

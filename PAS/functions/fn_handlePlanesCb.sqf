@@ -3,7 +3,7 @@
 	File: fn_handlePlanesCb.sqf
 	Author: PiG13BR - https://github.com/PiG13BR
 	Date: 03/10/2026
-	Last Update: 05/10/2026
+	Last Update: 08/10/2026
 	License: MIT License - http://www.opensource.org/licenses/MIT
 
 	Description:
@@ -32,5 +32,7 @@ localNamespace setVariable ["PIG_PAS_aircraft", _vehicleLocal];
 //[_vehicleLocal, _lastAngle] call PIG_fnc_cameraAngle;
 //--------------- Camera
 [_display, _vehicleLocal] call PIG_fnc_loadCameraHandle;
+
+_vehicleLocal call PIG_fnc_reloadLoadout;
 
 [_display, _vehicleLocal] call PIG_fnc_loadPylonsLb;

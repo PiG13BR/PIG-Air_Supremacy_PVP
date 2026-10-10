@@ -4,6 +4,7 @@ params ["_unit", "_corpse"];
 waitUntil {!isNil "PIG_serverReady"};
 
 PIG_jet_spawned = false;
+PIG_jet_ready = false;
 
 _unit allowDamage false;
 

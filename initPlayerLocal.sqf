@@ -16,3 +16,5 @@ _player addEventHandler ["GetOutMan", {
 		_this setdamage 1;
 	}
 }];
+
+enableRadio false;

@@ -19,8 +19,8 @@
 params["_sideDefend", "_sideAttack"];
 
 missionNamespace setVariable ["PIG_convoyDestination", false];
-missionNamespace setVariable ["PIG_convoyDefendSide", _sideDefend];
-missionNamespace setVariable ["PIG_convoyAttackSide", _sideAttack];
+PIG_convoyDefendSide = _sideDefend;
+PIG_convoyAttackSide = _sideAttack;
 
 // Get spawn, middle and despawn markers from preset
 private _markers = [_sideDefend] call PIG_routes_convoy; // [spawn marker, [middle markers], despawn marker]
@@ -42,8 +42,7 @@ private _convoy_pool = [_sideDefend] call PIG_presets_convoy;
 if (_convoy_pool isEqualTo []) exitWith {diag_log "[WARNING] No convoy pool found/convoy pool is empty"; [] call PIG_fnc_selectTask;};
 
 _convoy_vehicles = [];
-private _convoy_group = createGroup _sideDefend;
-missionNamespace setVariable ["PIG_convoyGroup", _convoy_group];
+private _convoy_group = createGroup [_sideDefend, true];
 
 // The convoy will spawn in order, one vehicle behind another
 private _offSet = 0;
@@ -77,7 +76,7 @@ for "_i" from 1 to (PIG_convoyVehiclesLength_param) do {
 	_convoy_vehicles pushBack _vehicle; // Put convoy vehicles into the array
 };
 
-missionNamespace setVariable ["PIG_convoyVehicles", _convoy_vehicles];
+PIG_convoyVehicles = _convoy_vehicles;
 
 // Add EH for each vehicles and some attributes
 {
@@ -94,7 +93,7 @@ missionNamespace setVariable ["PIG_convoyVehicles", _convoy_vehicles];
 	_x addMPEventHandler ["MPKilled", {
 		params ["_unit", "_killer", "_instigator", "_useEffects"];
 
-		private _convoy_vehicles = (missionNamespace getVariable "PIG_convoyVehicles") - [_unit];
+		private _convoy_vehicles = PIG_convoyVehicles - [_unit];
 		missionNamespace setVariable ["PIG_convoyVehicles", _convoy_vehicles];
 
 		// Add score to player (testing)
@@ -103,7 +102,7 @@ missionNamespace setVariable ["PIG_convoyVehicles", _convoy_vehicles];
 		};
 
 		// Change the leader/lead vehicle of the group right away
-		private _lead_veh = (missionNamespace getVariable "PIG_convoyVehicles") # 0;
+		private _lead_veh = PIG_convoyVehicles # 0;
 		(group (effectiveCommander _lead_veh)) selectLeader (effectiveCommander _lead_veh);
 
 		// This script below is to replace the wreck with some effects
@@ -182,7 +181,7 @@ missionNamespace setVariable ["PIG_convoyVehicles", _convoy_vehicles];
 	_x allowCrewInImmobile true;
 	_x limitSpeed 45;
 	
-}forEach (missionNamespace getVariable "PIG_convoyVehicles");
+}forEach PIG_convoyVehicles;
 
 // Attributes for the convoy group (units)
 {
@@ -231,7 +230,7 @@ missionNamespace setVariable ['PIG_convoyDestination', false];
 private _waypoint = _convoy_group addWaypoint [_despawn_pos, 0];
 _waypoint setWaypointType "MOVE";
 _waypoint setWaypointCompletionRadius 50;
-_waypoint setWaypointStatements ["true", "missionNamespace setVariable ['PIG_convoyDestination', true];"];
+_waypoint setWaypointStatements ["true", "if (isServer) then {missionNamespace setVariable ['PIG_convoyDestination', true];}"];
 
 // Tasks
 [
@@ -259,8 +258,8 @@ _startMarker setMarkerText "Partida";
 _endMarker setMarkerText "Destino";
 switch (_sideDefend) do {
 	case west : {
-		_startMarker setMarkerColor "ColorGUER";
-		_endMarker setMarkerColor "ColorGUER";
+		_startMarker setMarkerColor "colorWEST";
+		_endMarker setMarkerColor "colorWEST";
 	};
 	case east : {
 		_startMarker setMarkerColor "ColorEAST";
@@ -268,49 +267,31 @@ switch (_sideDefend) do {
 	};
 };
 
-// Create trigger to monitor the task
-_trg = createTrigger ["EmptyDetector", [0,0,0], false];
-_trg setTriggerArea [0, 0, 0, false];
-_trg setTriggerInterval 1;
-_trg setTriggerStatements [
-	// Condition
-	toString {
-		(count (missionNamespace getVariable 'PIG_convoyVehicles') == 0) || {missionNamespace getVariable 'PIG_convoyDestination'}
-	},
-	// On Activation
-	toString {
-		if ((count (missionNamespace getVariable 'PIG_convoyVehicles') == 0) && {!(missionNamespace getVariable 'PIG_convoyDestination')}) then {
-			['convoy_attack_task', 'SUCCEEDED', true] call BIS_fnc_taskSetState; 
-			['convoy_defend_task', 'FAILED', true] call BIS_fnc_taskSetState;
-		 	[(missionNamespace getVariable 'PIG_convoyDefendSide'), -10] call BIS_fnc_respawnTickets; 
-		} else {
-			['convoy_attack_task', 'FAILED', true] call BIS_fnc_taskSetState; 
-			['convoy_defend_task', 'SUCCEEDED', true] call BIS_fnc_taskSetState;
-			[(missionNamespace getVariable 'PIG_convoyAttackSide'), -10] call BIS_fnc_respawnTickets; 
-		};
-		if ((count (missionNamespace getVariable 'PIG_convoyVehicles') > 0) && {missionNamespace getVariable 'PIG_convoyDestination'}) then {
-			{
-				_x removeAllMPEventHandlers "MPKilled";
-				_x removeAllEventHandlers "GetOut";
-				_x removeAllEventHandlers "HandleDamage";
-				_x removeAllEventHandlers "Engine";
-				_x removeAllEventHandlers "Fuel";
-				deleteVehicle _x;
-			}forEach (missionNamespace getVariable 'PIG_convoyVehicles');
-		};
-		missionNamespace setVariable ['PIG_convoyVehicles', nil];
-		{deleteVehicle _x} forEach units (missionNamespace getVariable 'PIG_convoyGroup');
-		missionNamespace setVariable ['PIG_convoyGroup', nil];
-		missionNamespace setVariable ["PIG_convoyDestination", nil];
-		{deleteMarker _x} forEach ['marker_start_convoy', 'marker_destination_convoy'];
-		diag_log "[CONVOY OBJECTIVE] Convoy objective finished";
-		[] call PIG_fnc_selectTask;
+spawn {
+	waitUntil [{(({alive _x} count PIG_convoyVehicles) < 1) || {missionNamespace getVariable ['PIG_convoyDestination', false]}}, -1, 1];
 
-		deleteVehicle thisTrigger;
-	}, 
-	// On Deactivation
-	""
-];
+	if ((count PIG_convoyVehicles == 0) && {!(missionNamespace getVariable ['PIG_convoyDestination', false])}) then {
+		['convoy_attack_task', 'SUCCEEDED', true] call BIS_fnc_taskSetState; 
+		['convoy_defend_task', 'FAILED', true] call BIS_fnc_taskSetState;
+		[PIG_convoyDefendSide, -10] call BIS_fnc_respawnTickets; 
+	} else {
+		['convoy_attack_task', 'FAILED', true] call BIS_fnc_taskSetState; 
+		['convoy_defend_task', 'SUCCEEDED', true] call BIS_fnc_taskSetState;
+		[PIG_convoyAttackSide, -10] call BIS_fnc_respawnTickets; 
+	};
+	if ((count PIG_convoyVehicles > 0) && {missionNamespace getVariable ['PIG_convoyDestination', false]}) then {
+		{
+			deleteVehicleCrew _x;
+			deleteVehicle _x;
+		}forEach PIG_convoyVehicles;
+	};
+	PIG_convoyVehicles = nil;
+	missionNamespace setVariable ["PIG_convoyDestination", nil];
+	{deleteMarker _x} forEach ['marker_start_convoy', 'marker_destination_convoy'];
+
+	diag_log "[CONVOY OBJECTIVE] Convoy objective finished";
+	[] call PIG_fnc_selectTask;
+};
 
 diag_log "[CONVOY OBJECTIVE] Convoy objective started";
 PIG_lastTaskPlayed pushBack "CONVOY";

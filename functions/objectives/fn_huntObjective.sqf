@@ -38,14 +38,14 @@ if (_score <= 0) then {
 } else {
 	_player = ((_scores #0) #1);
 };
-missionNamespace setVariable ["PIG_huntPlayerJet", (vehicle _player)];
-missionNamespace setVariable ["PIG_huntPlayerEjected", false];
-missionNamespace setVariable ["PIG_huntPlayerKilled", false];
+PIG_huntPlayerJet = (vehicle _player);
+_player setVariable ["PIG_huntPlayerEjected", false];
+_player setVariable ["PIG_huntPlayerKilled", false];
 
 // Add GetOutMan EH
 _player addEventHandler ["GetOutMan", {
 	params ["_unit", "_role", "_vehicle", "_turret", "_isEject"];
-	missionNamespace setVariable ["PIG_huntPlayerEjected", true];
+	_unit setVariable ["PIG_huntPlayerEjected", true, true];
 	_unit removeEventHandler [_thisEvent, _thisEventHandler];
 }];
 
@@ -57,13 +57,13 @@ _player addMPEventHandler ["MPKilled", {
 	if (isPlayer _instigator) then {
 		_instigator addScore 10;
 	};
-	missionNamespace setVariable ["PIG_huntPlayerKilled", true];
+	_unit setVariable ["PIG_huntPlayerKilled", true, true];
 	_unit removeMPEventHandler [_thisEvent, _thisEventHandler];
 }];
 
 _sideDefend = (side _player);
 _sideAttack = [east, west] - [_sideDefend];
-missionNamespace setVariable ["PIG_huntDefendSide", _sideDefend];
+PIG_huntDefendSide = _sideDefend;
 
 // Create tasks
 [
@@ -89,39 +89,29 @@ missionNamespace setVariable ["PIG_huntDefendSide", _sideDefend];
 missionNamespace setVariable ["PIG_timerTimeOut", false, true];
 [PIG_huntTimer_param] remoteExecCall ["PIG_fnc_manageTimer", 0, true];
 
-// Create trigger to monitor the task
-_trg = createTrigger ["EmptyDetector", [0,0,0], false];
-_trg setTriggerArea [0, 0, 0, false];
-_trg setTriggerInterval 0.5;
-_trg setTriggerStatements [
-	// Condition
-	toString {
-		(!alive (missionNamespace getVariable 'PIG_huntPlayerJet')) || {missionNamespace getVariable 'PIG_timerTimeOut'} || {missionNamespace getVariable "PIG_huntPlayerEjected"} || {missionNamespace getVariable "PIG_huntPlayerKilled"}
-	},
-	// On Activation
-	toString {
-		if ((!(missionNamespace getVariable 'PIG_timerTimeOut')) && {(!alive (missionNamespace getVariable 'PIG_huntPlayerJet')) || {missionNamespace getVariable "PIG_huntPlayerEjected"}} || {missionNamespace getVariable "PIG_huntPlayerKilled"}) then {	
-			[-1, true] call BIS_fnc_countdown;
-			['hunt_attack_task', 'SUCCEEDED', true] call BIS_fnc_taskSetState; 
-			['hunt_defend_task', 'FAILED', true] call BIS_fnc_taskSetState;
-			[(missionNamespace getVariable 'PIG_huntDefendSide'), -5] call BIS_fnc_respawnTickets; 
-		} else {
-			['hunt_attack_task', 'FAILED', true] call BIS_fnc_taskSetState; 
-			['hunt_defend_task', 'SUCCEEDED', true] call BIS_fnc_taskSetState;
-		};
-		
-		missionNamespace setVariable ['PIG_huntPlayerJet', nil];
-		missionNamespace setVariable ["PIG_huntDefendSide", nil];
-		missionNamespace setVariable ["PIG_huntPlayerEjected", nil];
-		diag_log "[HUNT OBJECTIVE] Hunt objective finished";
-		[] call PIG_fnc_selectTask;
+[_player] spawn {
+	params["_player"];
 
-		deleteVehicle thisTrigger;
-		
-	}, 
-	// On Deactivation
-	""
-];
+	waitUntil [{!alive PIG_huntPlayerJet  || {missionNamespace getVariable ['PIG_timerTimeOut', false]} || {_player getVariable "PIG_huntPlayerEjected"} || {_player getVariable "PIG_huntPlayerKilled"}}, -1, 1];
+
+	if ((!(missionNamespace getVariable ['PIG_timerTimeOut', false])) && {(!alive PIG_huntPlayerJet) || {_player getVariable "PIG_huntPlayerEjected"}} || {_player getVariable "PIG_huntPlayerKilled"}) then {	
+		[-1, true] call BIS_fnc_countdown;
+		['hunt_attack_task', 'SUCCEEDED', true] call BIS_fnc_taskSetState; 
+		['hunt_defend_task', 'FAILED', true] call BIS_fnc_taskSetState;
+		[PIG_huntDefendSide, -5] call BIS_fnc_respawnTickets; 
+	} else {
+		['hunt_attack_task', 'FAILED', true] call BIS_fnc_taskSetState; 
+		['hunt_defend_task', 'SUCCEEDED', true] call BIS_fnc_taskSetState;
+	};
+	
+	PIG_huntPlayerJet = nil;
+	PIG_huntDefendSide = nil;
+	_player setVariable ["PIG_huntPlayerEjected", nil];
+	_player setVariable ["PIG_huntPlayerKilled", nil];
+
+	diag_log "[HUNT OBJECTIVE] Hunt objective finished";
+	[] call PIG_fnc_selectTask;
+};
 
 diag_log "[HUNT OBJECTIVE] Hunt objective started";
 PIG_lastTaskPlayed pushBack "HUNT";

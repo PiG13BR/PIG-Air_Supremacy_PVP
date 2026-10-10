@@ -1,8 +1,8 @@
 /*
 	File: fn_airControlObjective.sqf
 	Author: PiG13BR
-	Date: 2024/02/11
-	Last Update: 2024/07/11
+	Date: 02/11/2024
+	Last Update: 07/10/2026
 	License: MIT License - http://www.opensource.org/licenses/MIT
 
 	Description:
@@ -15,13 +15,13 @@
 		-
 */
 
-_airControlMarker = [] call PIG_fnc_getAirControlMarkers;
-_airControlPos = (markerPos _airControlMarker);
+private _airControlMarker = [] call PIG_fnc_getAirControlMarkers;
+private _airControlPos = (markerPos _airControlMarker);
 
-_areaSize = [5000,5000];
+private _areaSize = [5000,5000];
 
 // Create area marker
-_markerArea = createMarker ["air_control_area", _airControlPos];
+private _markerArea = createMarker ["air_control_area", _airControlPos];
 _markerArea setMarkerSize _areaSize;
 _markerArea setMarkerShape "ELLIPSE";
 _markerArea setMarkerBrush "solid";
@@ -46,10 +46,13 @@ _markerArea setMarkerAlpha 0.5;
 ] call PIG_fnc_createTask;
 
 missionNamespace setVariable ["PIG_airControlOwner", sideUnknown];
+
+// Create Timer
 missionNamespace setVariable ["PIG_timerTimeOut", false, true];
+[PIG_airControlTimer_param] remoteExecCall ["PIG_fnc_manageTimer", 0, true];
 
 // Create trigger based on marker
-_trg = [objNull, _markerArea] call BIS_fnc_triggerToMarker;
+private _trg = [objNull, _markerArea] call BIS_fnc_triggerToMarker;
 _trg setTriggerType "NONE";
 _trg setTriggerActivation ["ANYPLAYER", "PRESENT", true];
 _trg setTriggerInterval 0.5;
@@ -94,7 +97,7 @@ _trg setTriggerStatements [
 				missionNamespace setVariable ["PIG_airControlOwner", sideUnknown];
 			};
 			if ((count (_west)) > (count (_opfor))) then {
-				"air_control_area" setMarkerColor 'ColorGUER';
+				"air_control_area" setMarkerColor 'colorWEST';
 				missionNamespace setVariable ["PIG_airControlOwner", west];
 			};
 			if ((count (_opfor)) > (count (_west))) then {
@@ -106,9 +109,6 @@ _trg setTriggerStatements [
 	// On Deactivation
 	toString {PIG_trgActivated = nil}
 ];
-
-// Set timer
-[PIG_airControlTimer_param] remoteExecCall ["PIG_fnc_manageTimer", 0, true]; // Call on server and client
 
 diag_log "[AIR CONTROL OBJECTIVE] Air control objective started";
 PIG_lastTaskPlayed pushBack "AIR CONTROL";

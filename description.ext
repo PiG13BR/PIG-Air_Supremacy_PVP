@@ -107,7 +107,6 @@ class CfgFunctions
 };
 
 #include "PAS\ui\RscPASMenu.hpp"
-#include "PAS\cfgEventHandlers.hpp"
 
 // User Interface
 #include "ui\AS_defines.hpp"
@@ -164,3 +163,11 @@ class CfgTaskDescriptions
 };
 
 #include "cfgDebriefing.hpp"
+
+class CfgRemoteExec
+{
+	class Functions
+	{
+		#include "cfgRemoteExec.hpp"
+	};
+};

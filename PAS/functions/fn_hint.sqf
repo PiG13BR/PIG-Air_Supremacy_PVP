@@ -28,7 +28,7 @@ if !(typeName _text in ["STRING", "TEXT"]) then {_text = str _text};
 
 PIG_PAS_lastHint params ["_lastHintTime", "_lastHintPriority"];
 
-private _time = CBA_missionTime;
+private _time = serverTime;
 
 if (_time > _lastHintTime + _delay || {_priority >= _lastHintPriority}) then {
     hintSilent _text;
@@ -36,5 +36,8 @@ if (_time > _lastHintTime + _delay || {_priority >= _lastHintPriority}) then {
     PIG_PAS_lastHint set [0, _time];
     PIG_PAS_lastHint set [1, _priority];
 
-    [{if ((_this select 0) == PIG_PAS_lastHint select 0) then {hintSilent ""};}, [_time], _delay, 0] call CBA_fnc_waitAndExecute;
+    _time spawn {
+        sleep _delay;
+        if (_this == PIG_PAS_lastHint select 0) then {hintSilent ""};
+    };
 };
